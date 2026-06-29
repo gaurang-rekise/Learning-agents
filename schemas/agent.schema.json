@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/learning-agents/agent.schema.json",
+  "title": "Learning Agent Definition",
+  "type": "object",
+  "required": ["id", "name", "version", "model_compatibility", "purpose", "system_prompt"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "name": { "type": "string" },
+    "version": { "type": "string" },
+    "model_compatibility": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "purpose": { "type": "string" },
+    "inputs": { "type": "object" },
+    "outputs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "system_prompt": { "type": "string" },
+    "workflow": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "quality_rules": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": true
+}
