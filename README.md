@@ -24,6 +24,22 @@ This repo includes:
 - `.antigravity/workflows/autonomous-curriculum-architect.md` as an Antigravity-friendly workflow.
 - `prompts/orchestrator.md` for cross-model routing between the specialist agents.
 
+## Install into another agent workspace
+
+Use the scripts in [`install/`](install/) to install this agent pack into OpenAI-compatible agents, Claude agents, Gemini, or Google Antigravity workspaces.
+
+Examples:
+
+```bash
+install/install_openai.sh --target /path/to/workspace
+install/install_claude.sh --target /path/to/workspace
+install/install_gemini.sh --target /path/to/workspace
+install/install_antigravity.sh --target /path/to/workspace
+install/install_learning_agents.sh --provider all --target /path/to/workspace
+```
+
+The installer creates a `.learning-agents/` folder in the target workspace and writes the correct provider context files, such as `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, and Antigravity workflow files.
+
 ## How to use
 
 1. Start with `prompts/orchestrator.md`.
