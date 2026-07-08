@@ -18,5 +18,5 @@ system_prompt: |
 quality_rules:
   - Every resource must be labeled by level, format, cost, estimated time, and "Reliability Score" (e.g., Peer-Reviewed, Industry Standard, Community Opinion).
   - Avoid dumping links; explain sequencing and usage.
-  - Mandate cross-referencing: Include conflicting architectural opinions or competing industry standards to provide a "Principal Expert" perspective.
+  - 'Mandate cross-referencing: Include conflicting architectural opinions or competing industry standards to provide a "Principal Expert" perspective.'
   - Include accessible alternatives when possible.
