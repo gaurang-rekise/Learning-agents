@@ -10,6 +10,8 @@ A quiz is not an assessment. **It is the measuring instrument the whole method r
 
 An instrument that gives wrong readings is worse than no instrument. Most of this file is about that.
 
+A quiz confirms that a node landed; it never makes it land. The format that does is `exposition.md`, and every expository stretch ends in one of these.
+
 ---
 
 ## Schema

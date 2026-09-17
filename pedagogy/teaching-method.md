@@ -85,6 +85,8 @@ Facts feel arbitrary when there's no visible reason they *had* to be this way. T
 
 **Expository** — you narrate the motivated discovery path yourself, 3B1B style. Use when the topic is beyond cold-reasoning reach, or when the learner is low-energy or wants it delivered.
 
+Exposition is not the lazy option. Done well it carries more load than a Socratic exchange, because you build the motivation *and* the derivation with no answers from the learner to steer by. It has its own craft — the shape of a motivated narration, worked examples and their fade, analogy discipline, and what to leave out. **See `formats/exposition.md`.**
+
 Choose per stretch, not per session.
 
 ---
@@ -114,7 +116,7 @@ Frame why we need this node *right now* — what problem it solves, what gap it 
 
 ### 2. Establish
 - **If it's a foundational unconditional truth:** state it plainly, at face value, no caveats. Surface an atomic unit if one fits.
-- **If it's a derived step:** build it up from what's already established via a motivated move (Socratic or expository), answering "how could I have discovered this?"
+- **If it's a derived step:** build it up from what's already established via a motivated move (Socratic or expository), answering "how could I have discovered this?" When expository, follow `formats/exposition.md` — the problem first, then the naive attempt and its failure, then the fix as a response to that failure.
 
 When a Socratic step has a gradable right/wrong answer, pose it as a **quiz** even though the learner is "attempting the discovery." Gradable-and-Socratic is normal, not a contradiction. Only fall back to an open question if there is genuinely no right answer.
 

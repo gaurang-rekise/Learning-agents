@@ -18,7 +18,7 @@ A method that only exists in its own output is not a method. This is the method.
 | `learning-aspects.md` | *What* "learned" means. Four aspects, four kinds of evidence. |
 | `calibration-and-affect.md` | *How hard*, and *how it should feel*. Edge-bracketing and the difficulty band. |
 | `session-shape.md` | *When*. The phase order of a single session. |
-| `formats/` | *In what form*. One file per output format. |
+| `formats/` | *In what form*. One file per format — `exposition.md` builds a node; the rest confirm it. |
 
 ## How they compose
 
