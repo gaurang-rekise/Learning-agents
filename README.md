@@ -19,7 +19,7 @@ Everything here exists to build that dependency graph in the learner's head: fou
 | [`pedagogy/`](pedagogy/) | **The method.** Start here. Model-agnostic — no provider, no tool names. |
 | [`agents/`](agents/) | Nine specialist agents as YAML. Bindings of the method. |
 | [`prompts/orchestrator.md`](prompts/orchestrator.md) | Routing and the five-phase session lifecycle. |
-| [`learner_records/`](learner_records/) | **Persistent learner state.** The thing that makes it a course. |
+| [`learner_records/TEMPLATES/`](learner_records/) | Blank scaffolds. Your actual records live in your own workspace, not here. |
 | [`.claude/`](.claude/) | Claude Code native runtime — skills, subagents, commands, hooks. |
 | [`install/`](install/) | Install the pack into any supported workspace. |
 
@@ -37,12 +37,24 @@ Everything here exists to build that dependency graph in the learner's head: fou
 
 ## Getting started
 
+**This repo is the system, not a workspace.** Install it where you want to learn — one directory per topic:
+
 ```bash
-# In this repo, with Claude Code:
+mkdir -p ~/learning/digital-electronics
+install/install_claude.sh --target ~/learning/digital-electronics
+```
+
+Then work *there*:
+
+```bash
 /teach                 # start or continue a session
 /review                # flashcards and drills due today
 /checkpoint            # write the session log and sync records
 ```
+
+Keeping the two apart matters. Your course stays out of the system's git history, each topic gets its own records, and the hooks can tell a lesson from a code change — they could not when both lived in one directory.
+
+Reinstall any time to pick up system updates; the pack is refreshed and your records are never touched.
 
 With any other agent: point it at [`prompts/orchestrator.md`](prompts/orchestrator.md), then give it a learner request — topic, target outcome, current level, time budget.
 

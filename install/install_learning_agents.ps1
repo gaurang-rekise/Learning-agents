@@ -84,6 +84,7 @@ function Install-Records {
   Copy-SeedFile (Join-Path $tpl 'mastery.md') (Join-Path $dst 'mastery.md')
   Copy-SeedFile (Join-Path $tpl 'deck.md')    (Join-Path $dst 'deck.md')
   Copy-SeedFile (Join-Path $tpl 'session.md') (Join-Path $dst 'sessions/_TEMPLATE.md')
+  Copy-SeedFile (Join-Path $tpl 'drills-README.md') (Join-Path $dst 'drills/README.md')
 }
 
 function Install-ClaudeRuntime {
