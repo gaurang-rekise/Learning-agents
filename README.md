@@ -15,6 +15,8 @@ This repository contains model-agnostic AI learning-system agents that can colle
 
 All agent definitions are stored in [`agents/`](agents/) as YAML files.
 
+Learner progress is tracked in [`learner_records/dashboard.md`](learner_records/dashboard.md), with module-specific saved resources under [`learner_records/resources/`](learner_records/resources/).
+
 ## Gemini and Google Antigravity compatibility
 
 This repo includes:
