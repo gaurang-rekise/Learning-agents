@@ -6,11 +6,20 @@ param(
   [switch]$Force
 )
 
+# Provider file contents are NOT embedded here. They live in install/templates/
+# and are read by both this script and install_learning_agents.sh, so the two
+# implementations cannot drift apart. Edit the templates, never this file.
+
 $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = Resolve-Path (Join-Path $ScriptDir '..')
+$TplDir = Join-Path $ScriptDir 'templates'
 $TargetPath = New-Item -ItemType Directory -Force -Path $Target | Select-Object -ExpandProperty FullName
 $PackDir = Join-Path $TargetPath '.learning-agents'
+
+function Get-Template($Name) {
+  Get-Content -Raw -Path (Join-Path $TplDir $Name)
+}
 
 function Copy-PackDir($Source, $Destination) {
   if (Test-Path $Destination) { Remove-Item -Recurse -Force $Destination }
@@ -27,7 +36,7 @@ function Write-ProviderFile($Path, $Content) {
       Write-Host "Keeping unchanged generated file: $Path"
       return
     }
-    if ($existing -match 'Learning Agents integration') {
+    if ($existing -match 'learning-agents:generated|Learning Agents integration') {
       Write-Host "Keeping existing generated file: $Path (use -Force to overwrite)"
       return
     }
@@ -38,86 +47,92 @@ function Write-ProviderFile($Path, $Content) {
   Set-Content -Path $Path -Value $normalized -NoNewline
 }
 
+# Seed a file only if it does not already exist. Learner records are the one
+# thing an install must never clobber: they are the course.
+function Copy-SeedFile($Source, $Destination) {
+  New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Destination) | Out-Null
+  if (Test-Path $Destination) {
+    Write-Host "Keeping existing learner record: $Destination"
+    return
+  }
+  Copy-Item -Force $Source $Destination
+  Write-Host "Seeded: $Destination"
+}
+
 function Install-Pack {
   New-Item -ItemType Directory -Force -Path $PackDir | Out-Null
-  Copy-PackDir (Join-Path $RepoRoot 'agents') (Join-Path $PackDir 'agents')
-  Copy-PackDir (Join-Path $RepoRoot 'prompts') (Join-Path $PackDir 'prompts')
-  Copy-PackDir (Join-Path $RepoRoot 'schemas') (Join-Path $PackDir 'schemas')
-  Copy-PackDir (Join-Path $RepoRoot 'examples') (Join-Path $PackDir 'examples')
-  Write-ProviderFile (Join-Path $PackDir 'README.md') @'
-# Installed Learning Agents
+  Copy-PackDir (Join-Path $RepoRoot 'pedagogy')  (Join-Path $PackDir 'pedagogy')
+  Copy-PackDir (Join-Path $RepoRoot 'agents')    (Join-Path $PackDir 'agents')
+  Copy-PackDir (Join-Path $RepoRoot 'prompts')   (Join-Path $PackDir 'prompts')
+  Copy-PackDir (Join-Path $RepoRoot 'schemas')   (Join-Path $PackDir 'schemas')
+  Copy-PackDir (Join-Path $RepoRoot 'examples')  (Join-Path $PackDir 'examples')
+  Copy-PackDir (Join-Path $RepoRoot 'learner_records/TEMPLATES') (Join-Path $PackDir 'templates')
+  Write-ProviderFile (Join-Path $PackDir 'README.md') (Get-Template 'pack.README.md')
+}
 
-This folder was installed from the Learning-agents repository.
+# The orchestrator opens with "you MUST load learner_records/profile.md". Before
+# this existed, a fresh install booted straight into that against a directory
+# that was never created.
+function Install-Records {
+  $tpl = Join-Path $RepoRoot 'learner_records/TEMPLATES'
+  $dst = Join-Path $TargetPath 'learner_records'
+  foreach ($sub in @('sessions','resources','drills')) {
+    New-Item -ItemType Directory -Force -Path (Join-Path $dst $sub) | Out-Null
+  }
+  Copy-SeedFile (Join-Path $tpl 'profile.md') (Join-Path $dst 'profile.md')
+  Copy-SeedFile (Join-Path $tpl 'roadmap.md') (Join-Path $dst 'roadmap.md')
+  Copy-SeedFile (Join-Path $tpl 'mastery.md') (Join-Path $dst 'mastery.md')
+  Copy-SeedFile (Join-Path $tpl 'deck.md')    (Join-Path $dst 'deck.md')
+  Copy-SeedFile (Join-Path $tpl 'session.md') (Join-Path $dst 'sessions/_TEMPLATE.md')
+}
 
-Use `.learning-agents/prompts/orchestrator.md` as the main orchestration prompt and `.learning-agents/agents/*.yaml` as the specialist agent definitions.
-'@
+function Install-ClaudeRuntime {
+  $src = Join-Path $RepoRoot '.claude'
+  $dst = Join-Path $TargetPath '.claude'
+  foreach ($sub in @('skills','agents','commands','hooks')) {
+    Copy-PackDir (Join-Path $src $sub) (Join-Path $dst $sub)
+  }
+  $settings = Join-Path $dst 'settings.json'
+  if (Test-Path $settings) {
+    Write-Host "Keeping existing .claude/settings.json - merge hooks manually from:"
+    Write-Host "  $(Join-Path $src 'settings.json')"
+  } else {
+    New-Item -ItemType Directory -Force -Path $dst | Out-Null
+    Copy-Item -Force (Join-Path $src 'settings.json') $settings
+    Write-Host "Seeded: $settings"
+  }
 }
 
 function Install-OpenAI {
-  Write-ProviderFile (Join-Path $TargetPath 'AGENTS.md') @'
-# Learning Agents integration for OpenAI-compatible coding agents
-
-Use the reusable learning-agent pack installed at `.learning-agents/`.
-
-1. Read `.learning-agents/prompts/orchestrator.md` first.
-2. Load agent definitions from `.learning-agents/agents/*.yaml` as needed.
-3. Start learning-plan requests with `autonomous-curriculum-architect`.
-4. Use specialist agents for diagnostics, resources, practice, tutoring, and progress tracking.
-'@
+  Write-ProviderFile (Join-Path $TargetPath 'AGENTS.md') (Get-Template 'openai.AGENTS.md')
 }
 
 function Install-Claude {
-  Write-ProviderFile (Join-Path $TargetPath 'CLAUDE.md') @'
-# Learning Agents integration for Claude agents
-
-Use the reusable learning-agent pack installed at `.learning-agents/`.
-
-- Treat `.learning-agents/prompts/orchestrator.md` as the coordination prompt.
-- Treat `.learning-agents/agents/*.yaml` as source-of-truth specialist personas.
-- Ask clarifying questions only when topic, outcome, level, or time budget is missing.
-'@
+  Write-ProviderFile (Join-Path $TargetPath 'CLAUDE.md') (Get-Template 'claude.CLAUDE.md')
+  Install-ClaudeRuntime
 }
 
 function Install-Gemini {
-  Write-ProviderFile (Join-Path $TargetPath 'GEMINI.md') @'
-# Learning Agents integration for Gemini
-
-Use the reusable learning-agent pack installed at `.learning-agents/`.
-
-1. Read `.learning-agents/prompts/orchestrator.md`.
-2. Load relevant YAML agents from `.learning-agents/agents/`.
-3. Build adaptive learning plans with diagnostics, resources, projects, and progress tracking.
-'@
-  Write-ProviderFile (Join-Path $TargetPath '.gemini/settings.json') @'
-{
-  "contextFileName": "GEMINI.md"
-}
-'@
+  Write-ProviderFile (Join-Path $TargetPath 'GEMINI.md') (Get-Template 'gemini.GEMINI.md')
+  Write-ProviderFile (Join-Path $TargetPath '.gemini/settings.json') (Get-Template 'gemini.settings.json')
 }
 
 function Install-Antigravity {
   Install-Gemini
-  Write-ProviderFile (Join-Path $TargetPath '.antigravity/workflows/learning-agents.md') @'
-# Learning Agents workflow for Google Antigravity
-
-Use `.learning-agents/prompts/orchestrator.md` and `.learning-agents/agents/*.yaml` to create diagnostics, curricula, resources, practice projects, and progress checks.
-
-Steps:
-1. Gather topic, target outcome, current level, deadline/time horizon, weekly time budget, preferred formats, and constraints.
-2. Use the Autonomous Curriculum Architect as lead.
-3. Use specialist agents for diagnostics, resources, projects, tutoring, and progress mentoring.
-4. Return the learner's immediate next action.
-'@
+  Write-ProviderFile (Join-Path $TargetPath '.antigravity/workflows/learning-agents.md') (Get-Template 'antigravity.workflow.md')
 }
 
 Install-Pack
+Install-Records
+
 switch ($Provider) {
-  'openai' { Install-OpenAI }
-  'claude' { Install-Claude }
-  'gemini' { Install-Gemini }
+  'openai'      { Install-OpenAI }
+  'claude'      { Install-Claude }
+  'gemini'      { Install-Gemini }
   'antigravity' { Install-Antigravity }
-  'all' { Install-OpenAI; Install-Claude; Install-Antigravity }
+  'all'         { Install-OpenAI; Install-Claude; Install-Antigravity }
 }
 
 Write-Host "Learning Agents installed for provider '$Provider' into: $TargetPath"
 Write-Host "Agent pack: $PackDir"
+Write-Host "Learner records: $(Join-Path $TargetPath 'learner_records')"

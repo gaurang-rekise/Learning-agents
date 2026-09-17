@@ -15,10 +15,11 @@ Options:
   -h, --help   Show this help.
 
 What gets installed:
-  - .learning-agents/agents, prompts, schemas, examples
+  - .learning-agents/pedagogy, agents, prompts, schemas, examples, templates
+  - learner_records/ seeded from templates (existing records are never touched)
   - Provider-specific context files:
       openai:      AGENTS.md section
-      claude:      CLAUDE.md section
+      claude:      CLAUDE.md section, plus .claude/ native runtime
       gemini:      GEMINI.md and .gemini/settings.json
       antigravity: GEMINI.md and .antigravity/workflows/learning-agents.md
 USAGE
@@ -96,7 +97,7 @@ write_file() {
       return 0
     fi
     rm -f "$tmp"
-    if grep -q "Learning Agents integration" "$path" 2>/dev/null; then
+    if grep -qE "learning-agents:generated|Learning Agents integration" "$path" 2>/dev/null; then
       echo "Keeping existing generated file: $path (use --force to overwrite)"
       return 0
     fi
@@ -107,99 +108,71 @@ write_file() {
   printf '%s\n' "$content" > "$path"
 }
 
+TPL_DIR="$REPO_ROOT/install/templates"
+
+tpl() {
+  cat "$TPL_DIR/$1"
+}
+
+# Seed a file only if it does not already exist. Learner records are the one
+# thing an install must never clobber: they are the course.
+seed_file() {
+  local src="$1"
+  local dst="$2"
+  mkdir -p "$(dirname "$dst")"
+  if [[ -e "$dst" ]]; then
+    echo "Keeping existing learner record: $dst"
+    return 0
+  fi
+  cp "$src" "$dst"
+  echo "Seeded: $dst"
+}
+
 install_pack() {
   mkdir -p "$PACK_DIR"
+  copy_dir "$REPO_ROOT/pedagogy" "$PACK_DIR/pedagogy"
   copy_dir "$REPO_ROOT/agents" "$PACK_DIR/agents"
   copy_dir "$REPO_ROOT/prompts" "$PACK_DIR/prompts"
   copy_dir "$REPO_ROOT/schemas" "$PACK_DIR/schemas"
   copy_dir "$REPO_ROOT/examples" "$PACK_DIR/examples"
-  cat > "$PACK_DIR/README.md" <<'PACKREADME'
-# Installed Learning Agents
-
-This folder was installed from the Learning-agents repository.
-
-Use `.learning-agents/prompts/orchestrator.md` as the main orchestration prompt and `.learning-agents/agents/*.yaml` as the specialist agent definitions.
-PACKREADME
+  copy_dir "$REPO_ROOT/learner_records/TEMPLATES" "$PACK_DIR/templates"
+  write_file "$PACK_DIR/README.md" "$(tpl pack.README.md)"
 }
 
-openai_content() {
-  cat <<'OPENAI'
-# Learning Agents integration for OpenAI-compatible coding agents
-
-Use the reusable learning-agent pack installed at `.learning-agents/`.
-
-## How to operate
-1. Read `.learning-agents/prompts/orchestrator.md` first.
-2. Load agent definitions from `.learning-agents/agents/*.yaml` as needed.
-3. For learning-plan requests, start with `autonomous-curriculum-architect`.
-4. Use `diagnostic-assessment-agent` when learner level is unclear.
-5. Use `learning-resource-researcher`, `practice-project-generator`, `socratic-tutor-agent`, and `progress-mentor-agent` for specialist tasks.
-
-## Output expectation
-Return a learner profile, diagnostic or gap analysis, curriculum map, module plan, resource recommendations, practice projects, progress rules, and next action.
-OPENAI
+# The orchestrator opens with "you MUST load learner_records/profile.md". Before
+# this existed, a fresh install booted straight into that against a directory
+# that was never created.
+install_records() {
+  local tpl="$REPO_ROOT/learner_records/TEMPLATES"
+  local dst="$TARGET/learner_records"
+  mkdir -p "$dst/sessions" "$dst/resources" "$dst/drills"
+  seed_file "$tpl/profile.md" "$dst/profile.md"
+  seed_file "$tpl/roadmap.md" "$dst/roadmap.md"
+  seed_file "$tpl/mastery.md" "$dst/mastery.md"
+  seed_file "$tpl/deck.md"    "$dst/deck.md"
+  seed_file "$tpl/session.md" "$dst/sessions/_TEMPLATE.md"
 }
 
-claude_content() {
-  cat <<'CLAUDE'
-# Learning Agents integration for Claude agents
-
-Use the reusable learning-agent pack installed at `.learning-agents/`.
-
-## Instructions for Claude
-- Treat `.learning-agents/prompts/orchestrator.md` as the coordination prompt.
-- Treat `.learning-agents/agents/*.yaml` as source-of-truth specialist personas.
-- Ask clarifying questions only when the learner's topic, outcome, current level, or time budget is missing.
-- Prefer concise plans with measurable mastery checks, practical projects, and remediation steps.
-
-## Agent routing
-Start with the Autonomous Curriculum Architect, then call on Diagnostic Assessment, Learning Resource Research, Practice Project Generation, Socratic Tutoring, and Progress Mentoring as appropriate.
-CLAUDE
+install_claude_runtime() {
+  copy_dir "$REPO_ROOT/.claude/skills" "$TARGET/.claude/skills"
+  copy_dir "$REPO_ROOT/.claude/agents" "$TARGET/.claude/agents"
+  copy_dir "$REPO_ROOT/.claude/commands" "$TARGET/.claude/commands"
+  copy_dir "$REPO_ROOT/.claude/hooks" "$TARGET/.claude/hooks"
+  chmod +x "$TARGET/.claude/hooks/"*.sh 2>/dev/null || true
+  if [[ -e "$TARGET/.claude/settings.json" ]]; then
+    echo "Keeping existing .claude/settings.json — merge hooks manually from:"
+    echo "  $REPO_ROOT/.claude/settings.json"
+  else
+    mkdir -p "$TARGET/.claude"
+    cp "$REPO_ROOT/.claude/settings.json" "$TARGET/.claude/settings.json"
+    echo "Seeded: $TARGET/.claude/settings.json"
+  fi
 }
 
-gemini_content() {
-  cat <<'GEMINI'
-# Learning Agents integration for Gemini
-
-Use the reusable learning-agent pack installed at `.learning-agents/`.
-
-## Primary workflow
-1. Read `.learning-agents/prompts/orchestrator.md`.
-2. Load relevant YAML agents from `.learning-agents/agents/`.
-3. Build adaptive learning plans with diagnostics, resources, projects, and progress tracking.
-
-## Compatibility rules
-- Keep prompts model-neutral and portable.
-- Use YAML agent definitions as the source of truth.
-- When a resource recommendation depends on current availability, verify before finalizing.
-GEMINI
-}
-
-antigravity_workflow_content() {
-  cat <<'ANTIGRAVITY'
-# Learning Agents workflow for Google Antigravity
-
-## When to use
-Use when a learner asks to master a topic, build a study plan, collect resources, test knowledge, or create practice projects.
-
-## Source files
-- `.learning-agents/prompts/orchestrator.md`
-- `.learning-agents/agents/autonomous-curriculum-architect.yaml`
-- `.learning-agents/agents/diagnostic-assessment-agent.yaml`
-- `.learning-agents/agents/learning-resource-researcher.yaml`
-- `.learning-agents/agents/practice-project-generator.yaml`
-- `.learning-agents/agents/progress-mentor-agent.yaml`
-- `.learning-agents/agents/socratic-tutor-agent.yaml`
-
-## Steps
-1. Gather topic, target outcome, current level, deadline/time horizon, weekly time budget, preferred formats, and constraints.
-2. Use the Autonomous Curriculum Architect as the lead agent.
-3. Run diagnostics when level is uncertain.
-4. Select resources and practice projects.
-5. Define progress checks and remediation rules.
-6. Return the learner's immediate next action.
-ANTIGRAVITY
-}
+openai_content()              { tpl openai.AGENTS.md; }
+claude_content()              { tpl claude.CLAUDE.md; }
+gemini_content()              { tpl gemini.GEMINI.md; }
+antigravity_workflow_content() { tpl antigravity.workflow.md; }
 
 install_openai() {
   write_file "$TARGET/AGENTS.md" "$(openai_content)"
@@ -207,13 +180,12 @@ install_openai() {
 
 install_claude() {
   write_file "$TARGET/CLAUDE.md" "$(claude_content)"
+  install_claude_runtime
 }
 
 install_gemini() {
   write_file "$TARGET/GEMINI.md" "$(gemini_content)"
-  write_file "$TARGET/.gemini/settings.json" '{
-  "contextFileName": "GEMINI.md"
-}'
+  write_file "$TARGET/.gemini/settings.json" "$(tpl gemini.settings.json)"
 }
 
 install_antigravity() {
@@ -222,6 +194,7 @@ install_antigravity() {
 }
 
 install_pack
+install_records
 case "$PROVIDER" in
   openai) install_openai ;;
   claude) install_claude ;;
@@ -236,3 +209,4 @@ esac
 
 echo "Learning Agents installed for provider '$PROVIDER' into: $TARGET"
 echo "Agent pack: $PACK_DIR"
+echo "Learner records: $TARGET/learner_records"
