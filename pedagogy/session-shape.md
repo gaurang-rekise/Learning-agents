@@ -103,6 +103,7 @@ Throughout:
 - Hold the difficulty band (`calibration-and-affect.md`). Escalate on a run of correct answers; back off after two consecutive misses on a node.
 - Respect the emotional arc: hardest material in the middle.
 - Choose formats by which **aspect** the node is missing (`learning-aspects.md` → `formats/`).
+- When a stretch is expository, follow `formats/exposition.md` — and close it with a quiz-check, since exposition is the one format with no built-in feedback.
 - Verify any fact you are less than certain of, **before** saying it.
 - On a failed quiz-check: **stop and repair.** Do not build on an unconfirmed node.
 

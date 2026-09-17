@@ -86,12 +86,14 @@ This is the direct link to `formats/`:
 
 | Aspect | Reach for |
 |---|---|
-| Discovery | the motivating question, a diagram, a story |
-| Understanding | quiz, Socratic derivation, explanation exercise, dependency DAG |
+| Discovery | **exposition** — the curiosity gap, the motivating problem, a diagram |
+| Understanding | **exposition** or Socratic derivation to build it; quiz and explanation exercise to confirm it |
 | Practice | flashcard, speed drill |
 | Application | lab, project, transfer task |
 
 When choosing what to do next with a node, look at which aspect it is missing and pick from that row. This is the whole selection algorithm.
+
+Note the split inside each row: some formats **build** a node and others **confirm** it. Exposition, Socratic derivation and diagrams build; quizzes, explanation exercises, cards and drills confirm. A session made only of confirming formats is an exam, not a lesson.
 
 ## Working an aspect matrix
 

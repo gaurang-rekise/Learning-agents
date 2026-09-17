@@ -44,8 +44,8 @@ Two routing rules that are easy to skip and expensive to skip:
 Read the node's aspect matrix in `learner_records/mastery.md` and generate for the **missing** aspect (`pedagogy/learning-aspects.md`):
 
 ```
-discovery     -> motivating problem, diagram, the failure that forced the idea
-understanding -> Socratic derivation, explanation exercise, dependency placement
+discovery     -> exposition: curiosity gap, motivating problem, the failure that forced the idea
+understanding -> exposition or Socratic derivation to BUILD; quiz or explanation exercise to CONFIRM
 practice      -> flashcards, speed drills
 application   -> lab, then project, then unlabelled transfer task
 ```

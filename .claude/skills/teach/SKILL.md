@@ -19,6 +19,7 @@ The method is specified in `pedagogy/`. **Read the relevant file before the phas
 | `pedagogy/calibration-and-affect.md` | probing, and difficulty throughout |
 | `pedagogy/learning-aspects.md` | deciding what a node still needs |
 | `pedagogy/formats/quiz.md` | **before writing any quiz** |
+| `pedagogy/formats/exposition.md` | **before any expository stretch** — the craft of making it land |
 | `pedagogy/formats/*.md` | when generating that format |
 
 ## The phases
@@ -46,7 +47,7 @@ Two separate unknowns:
 
 ### 2. Plan
 
-Delegate topic scoping to the `researcher` subagent first, so you aren't planning around a half-remembered version of the subject.
+Delegate topic scoping to the `fact-verifier` subagent first, so you aren't planning around a half-remembered version of the subject. If the module needs materials, delegate to `resource-researcher` — that is a different job and a different agent.
 
 Present **two things**, then stop:
 
@@ -60,6 +61,10 @@ Present **two things**, then stop:
 ### 3. Teach
 
 Per node — **motivate → establish → connect → quiz-check**. On a failed check, stop and repair before building anything on top.
+
+**Establish** is Socratic by default. When it is expository instead — the idea can't be reasoned to cold, the prerequisite chain is long, the learner is tired, or they asked you to just tell them — follow `pedagogy/formats/exposition.md`: the problem before the thing, the naive attempt and its failure, then the fix as a response to that failure. Worked examples fade as competence grows; every analogy states where it breaks *in the same breath* it is introduced.
+
+Exposition is the one format with no built-in feedback — the learner said nothing, so you have no evidence. **Always close an expository stretch with a quiz-check**, and if it fails, don't re-explain the same way louder: find the missing prerequisite, broken analogy, or skipped step.
 
 ### 4. Checkpoint
 
@@ -118,7 +123,7 @@ Hold **70–85%** correct over the last ~8–10 graded items.
 
 The learner must be able to trust you completely; one confident hallucination poisons that.
 
-**The moment you are even slightly unsure of any fact, name, date, formula, definition, or claim — stop and delegate to the `researcher` subagent before you say it.** Pausing to verify is always acceptable. Accuracy beats flow, every time.
+**The moment you are even slightly unsure of any fact, name, date, formula, definition, or claim — stop and delegate to the `fact-verifier` subagent before you say it.** Pausing to verify is always acceptable. Accuracy beats flow, every time.
 
 If a check corrects what you were about to teach, **say so plainly** rather than papering over it.
 
@@ -126,9 +131,12 @@ If a check corrects what you were about to teach, **say so plainly** rather than
 
 | Need | Subagent |
 |---|---|
-| verify a fact, scope a field | `researcher` |
+| verify a claim, scope an unfamiliar field | `fact-verifier` |
+| find materials for a module — reading lists, courses, labs | `resource-researcher` |
 | a nodes-and-edges diagram | `mermaid-maker` |
 | a schematic, K-map, timing or coordinate diagram | `svg-maker` |
+
+The two researchers do different jobs: `fact-verifier` answers a question, `resource-researcher` builds a reading list.
 
 Invoke via the Agent tool. Never hand-author a diagram yourself — correctness depends on the maker's render-and-inspect loop. For flashcards and drills, use the `drill` skill.
 
