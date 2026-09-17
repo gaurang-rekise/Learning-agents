@@ -1,52 +1,69 @@
 # Learning Agents
 
-This repository contains model-agnostic AI learning-system agents that can collect resources, analyze learner needs, teach, test mastery, and adapt a curriculum for any topic.
+A model-agnostic AI learning system. It collects resources, finds the edge of what you know, teaches so things lock in rather than rot, drills them to fluency, and keeps a persistent record so each session continues the last one instead of restarting it.
 
-## Agent set
+Works with Claude, Gemini, Google Antigravity, and OpenAI-compatible agents.
 
-| Agent | Purpose |
-| --- | --- |
-| Autonomous Curriculum Architect | Designs the complete adaptive curriculum, module sequence, schedule, and mastery plan. |
-| Diagnostic Assessment Agent | Measures current level and prerequisite gaps before planning. |
-| Learning Resource Researcher | Finds and ranks high-quality learning materials for each module. |
-| Socratic Tutor Agent | Teaches interactively through guided questions, hints, feedback, and recaps. |
-| Practice Project Generator | Creates drills, labs, portfolio projects, acceptance criteria, and stretch goals. |
-| Progress Mentor Agent | Tracks evidence of progress, detects bottlenecks, and adjusts the plan. |
+## The idea
 
-All agent definitions are stored in [`agents/`](agents/) as YAML files.
+Two brains can hold the same propositions and look identical from outside. One holds a pile of **disconnected lone facts**. The other holds a few **core truths** from which those facts are derivable, so to it they are obviously connected.
 
-## Gemini and Google Antigravity compatibility
+That connection *is* understanding — and it's the only kind that survives. Memorized facts rot. Understood facts don't.
 
-This repo includes:
+Everything here exists to build that dependency graph in the learner's head: foundational truths as the **nodes**, motivated derivations as the **edges**.
 
-- `GEMINI.md` for Gemini CLI and Google Antigravity workspace context.
-- `.gemini/settings.json` to use `GEMINI.md` as the Gemini context file.
-- `.antigravity/workflows/autonomous-curriculum-architect.md` as an Antigravity-friendly workflow.
-- `prompts/orchestrator.md` for cross-model routing between the specialist agents.
+## What's in it
 
-## Install into another agent workspace
+| Path | What it is |
+|---|---|
+| [`pedagogy/`](pedagogy/) | **The method.** Start here. Model-agnostic — no provider, no tool names. |
+| [`agents/`](agents/) | Nine specialist agents as YAML. Bindings of the method. |
+| [`prompts/orchestrator.md`](prompts/orchestrator.md) | Routing and the five-phase session lifecycle. |
+| [`learner_records/`](learner_records/) | **Persistent learner state.** The thing that makes it a course. |
+| [`.claude/`](.claude/) | Claude Code native runtime — skills, subagents, commands, hooks. |
+| [`install/`](install/) | Install the pack into any supported workspace. |
 
-Use the scripts in [`install/`](install/) to install this agent pack into OpenAI-compatible agents, Claude agents, Gemini, or Google Antigravity workspaces.
+## The method, briefly
 
-Examples:
+**Four aspects.** "Learned it" isn't one thing. Every node is tracked across *discovery* (why does this exist?), *understanding* (how does it hang together?), *practice* (can I do it fast?), and *application* (when does it matter?). A node is mastered only when all four carry evidence — which is how the system can honestly say "understands it completely on paper, has never built one."
+
+**Calibrated difficulty.** Too much failure discourages; too little challenge bores. The system locates the *edge* of what you know — bracketed by both something you get right and something you don't — then holds a 70–85% success band, escalating sharply when you're coasting and backing off after two consecutive misses.
+
+**Quizzes as instruments.** Every wrong option is a real misconception, so *which* wrong answer you pick is a diagnosis. Every quiz carries an explicit "I don't know" that is never graded wrong — without it you guess, and a lucky guess is recorded as knowledge you don't have.
+
+**Multiple formats.** Quizzes confirm understanding. Flashcards make facts instant. Speed drills make procedures fluent. Explanation exercises prove the model is real. Labs and transfer tasks prove it survives contact with a problem nobody labelled.
+
+**Persistence.** Sessions end with a written log whose last section is an executable script for the next session's opening move.
+
+## Getting started
 
 ```bash
-install/install_openai.sh --target /path/to/workspace
-install/install_claude.sh --target /path/to/workspace
-install/install_gemini.sh --target /path/to/workspace
+# In this repo, with Claude Code:
+/teach                 # start or continue a session
+/review                # flashcards and drills due today
+/checkpoint            # write the session log and sync records
+```
+
+With any other agent: point it at [`prompts/orchestrator.md`](prompts/orchestrator.md), then give it a learner request — topic, target outcome, current level, time budget.
+
+## Install into another workspace
+
+```bash
+install/install_claude.sh      --target /path/to/workspace
+install/install_gemini.sh      --target /path/to/workspace
+install/install_openai.sh      --target /path/to/workspace
 install/install_antigravity.sh --target /path/to/workspace
 install/install_learning_agents.sh --provider all --target /path/to/workspace
 ```
 
-The installer creates a `.learning-agents/` folder in the target workspace and writes the correct provider context files, such as `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, and Antigravity workflow files.
-
-## How to use
-
-1. Start with `prompts/orchestrator.md`.
-2. Provide a learner request, including topic, goal, current level, and time budget.
-3. Load the relevant YAML files from `agents/`.
-4. Produce the curriculum, diagnostics, resources, practice tasks, and tracking plan.
+Creates `.learning-agents/` with the pack, seeds a blank `learner_records/`, and writes the right context files for the provider. Existing learner records are never overwritten. See [`install/README.md`](install/README.md).
 
 ## Example
 
-See `examples/python-beginner-to-job-ready.md` for an example orchestration flow.
+[`examples/fsm-sequence-detector-session.md`](examples/fsm-sequence-detector-session.md) — a real session traced end to end, including the misconception that was caught and how.
+
+[`examples/python-beginner-to-job-ready.md`](examples/python-beginner-to-job-ready.md) — a curriculum-design flow.
+
+## Credit
+
+The two teaching principles and the edge-bracketing protocol are ported from [amosblomqvist/learn](https://github.com/amosblomqvist/learn), a pi configuration, with the personal framing generalised. The four learning aspects, the affect model, the multi-format registry, and the entire persistence layer are additions.
