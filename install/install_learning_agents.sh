@@ -151,6 +151,7 @@ install_records() {
   seed_file "$tpl/mastery.md" "$dst/mastery.md"
   seed_file "$tpl/deck.md"    "$dst/deck.md"
   seed_file "$tpl/session.md" "$dst/sessions/_TEMPLATE.md"
+  seed_file "$tpl/drills-README.md" "$dst/drills/README.md"
 }
 
 install_claude_runtime() {

@@ -38,6 +38,9 @@ if not os.path.isdir(records):
 
 today = datetime.date.today().isoformat()
 
+# Only dated logs count as sessions; the seeded _TEMPLATE.md is not one.
+DATED = "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_*.md"
+
 # Already archived? Nothing to ask for.
 if glob.glob(os.path.join(records, "sessions", f"{today}_*.md")):
     sys.exit(0)
@@ -130,7 +133,7 @@ except FileExistsError:
 except OSError:
     pass                 # cannot persist the marker; ask anyway, once is better
 
-n = len(glob.glob(os.path.join(records, "sessions", "*.md"))) + 1
+n = len(glob.glob(os.path.join(records, "sessions", DATED))) + 1
 print(json.dumps({
     "decision": "block",
     "reason": (

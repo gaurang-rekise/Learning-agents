@@ -51,7 +51,9 @@ if roadmap:
         out.append(f"**Roadmap position:** {status.group(1).strip()}")
 
 # --- latest session: the entry point -------------------------------------
-sessions = sorted(glob.glob(os.path.join(records, "sessions", "*.md")))
+# Only dated logs are sessions. Plain glob would rank the seeded _TEMPLATE.md
+# above every real log, because "_" sorts after the digits of a YYYY- prefix.
+sessions = sorted(glob.glob(os.path.join(records, "sessions", "[0-9]" * 4 + "-[0-9][0-9]-[0-9][0-9]_*.md")))
 if sessions:
     latest = sessions[-1]
     body = read(latest)

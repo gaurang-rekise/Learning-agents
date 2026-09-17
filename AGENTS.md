@@ -9,7 +9,7 @@ This repository stores a model-agnostic learning system: a pedagogy spec, the ag
 | `pedagogy/` | **The method.** Read `pedagogy/README.md` first. |
 | `agents/*.yaml` | Specialist agents — bindings of the method, not replacements for it. |
 | `prompts/orchestrator.md` | Routing and the five-phase session lifecycle. |
-| `learner_records/` | Persistent learner state. Owned solely by `progress-mentor-agent`. |
+| `learner_records/TEMPLATES/` | Blank scaffolds seeded into a learner's workspace. No live course lives here. |
 | `schemas/agent.schema.json` | Structure contract for agent definitions. |
 | `install/` | Provider installers; generated file contents live in `install/templates/`. |
 | `.claude/` | Claude Code native runtime — skills, subagents, commands, hooks. |
@@ -28,6 +28,7 @@ This repository stores a model-agnostic learning system: a pedagogy spec, the ag
 - Add examples for new orchestration flows in `examples/`.
 
 ## Working on the learner archive
-- `learner_records/` holds a real learner's course. Treat it as data, not as fixtures.
-- Installers seed it from `learner_records/TEMPLATES/` and must never overwrite existing records.
-- If a gap listed in `profile.md` was closed in a session, clear it in that same session. That file rots otherwise — it once carried a closed gap for two months.
+- **No live course belongs in this repo.** A learner's records live in their own workspace (`~/learning/<topic>/`), seeded by the installer from `TEMPLATES/`. Mixing the two put a real course in the system's git history and left the hooks unable to distinguish a lesson from a code change.
+- Installers must never overwrite an existing record. `seed_file` writes only when the destination is absent, and `--force` does not override that.
+- Editing `TEMPLATES/` changes what every future learner starts with.
+- The agents still own the archive at runtime: if a gap listed in `profile.md` was closed in a session, `progress-mentor-agent` clears it in that same session. That file rots otherwise — it once carried a closed gap for two months.
